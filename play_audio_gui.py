@@ -74,7 +74,6 @@ class App(tk.Tk):
         self.option_device_var = tk.StringVar(self)
 
         # set up audio items
-        self.item_count = len(item_list)
         self.load_audio_data(item_list)
 
         # create widget
@@ -84,7 +83,10 @@ class App(tk.Tk):
         self.activate_items()
 
         # set up audio stream (with default)
-        self.init_audio_stream()
+        try:
+            self.init_audio_stream()
+        except Exception as e:
+            print(str(e))
 
     def create_wigets(self):
         # padding for widgets using the grid layout
@@ -143,7 +145,10 @@ class App(tk.Tk):
 
     def option_changed_device(self, *args):
         self.output_device = self.option_device_var.get()
-        self.init_audio_stream()
+        try:
+            self.init_audio_stream()
+        except Exception as e:
+            print(str(e))
     
     def output_device_infobox(self):
         dev_info = sd.query_devices(device=self.output_device)
@@ -152,12 +157,17 @@ class App(tk.Tk):
     def load_audio_data(self, item_list):
         self.audio_data = []
         self.audio_fs = []
-        for item in item_list:
-            item_audio, item_fs = load_audio(item)
-            self.audio_data.append(item_audio)
-            self.audio_fs.append(item_fs)
+        if item_list:
+            for item in item_list:
+                item_audio, item_fs = load_audio(item)
+                self.audio_data.append(item_audio)
+                self.audio_fs.append(item_fs)
+        self.item_count = len(self.audio_data)
 
     def init_audio_stream(self):
+        if self.item_count == 0:
+            raise ValueError("No audio files!")
+
         self.audio_data = sanitize_audio_data(self.audio_data)
         if self.stream is not None:
             if any(elem is None for elem in self.audio_fs):
