@@ -14,7 +14,7 @@ pip install soundfile sounddevice
 
 Then adapt the list of audio files in the script -- that's it!
 
-Start with
+If you prefer, you can pass the audio files directly:
 ```
-python play_audio_gui.py
+python play_audio_gui.py -f myaudio.wav -f emptyButton
 ```

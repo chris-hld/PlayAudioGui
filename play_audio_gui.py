@@ -2,14 +2,16 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter.messagebox import showinfo
+import warnings
+import threading
+import argparse
 import numpy as np
 import sounddevice as sd
 import soundfile as sf
-import warnings
-import threading
 
 
-### Specify Audio files here:
+
+### Specify Audio files here, or leave empty to use with command line arg
 item_list = [
     'Clapping.wav',
     'applause.wav',
@@ -17,6 +19,11 @@ item_list = [
 ]
 ###
 
+parser = argparse.ArgumentParser()
+parser.add_argument('-f', '--file', help='input file', action='append')
+args = parser.parse_args() 
+if args.file:
+    item_list = args.file
 
 
 current_frame = 0
