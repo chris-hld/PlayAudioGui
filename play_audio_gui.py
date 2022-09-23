@@ -26,11 +26,10 @@ if args.file:
     item_list = args.file
 
 
-current_frame = 0
-data = 0
 event = threading.Event()
 
 def load_audio(file_name):
+    # load data and fs, or None
     try:
         data, fs = sf.read(file_name, always_2d=True)
     except Exception as e:
@@ -38,17 +37,6 @@ def load_audio(file_name):
         data = None
         fs = None
     return data, fs
-
-def play_audio_callback(outdata, frames, time, status):
-    global current_frame
-    if status:
-        print(status)
-    chunksize = min(len(data) - current_frame, frames)
-    outdata[:chunksize] = data[current_frame:current_frame + chunksize]
-    if chunksize < frames:
-        outdata[chunksize:] = 0
-        raise sd.CallbackStop()
-    current_frame += chunksize
 
 def sanitize_audio_data(audio_data_list):
     # if not equal, extend length and channels.
@@ -64,9 +52,7 @@ def sanitize_audio_data(audio_data_list):
         audio_data_list[idx] = b
     return audio_data_list
 
-
-
-class App(tk.Tk):
+class PlayAudioApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.geometry("640x320")
@@ -90,10 +76,14 @@ class App(tk.Tk):
         self.activate_items()
 
         # set up audio stream (with default)
+        self.current_frame = 0
+        self.stream_data = None  # should that be protected?
         try:
             self.init_audio_stream()
         except Exception as e:
             print(str(e))
+        
+        self.protocol("WM_DELETE_WINDOW", self.quit)
 
     def create_wigets(self):
         # padding for widgets using the grid layout
@@ -140,7 +130,6 @@ class App(tk.Tk):
         items_frame.grid(row=3, rowspan=2, columnspan=3, sticky='EW', 
                          **paddings)
 
-
     def create_item_buttons(self, container, amount, paddings):
         self.item_buttons = []
         for i in range(amount):
@@ -170,6 +159,17 @@ class App(tk.Tk):
                 self.audio_data.append(item_audio)
                 self.audio_fs.append(item_fs)
         self.item_count = len(self.audio_data)
+    
+    def play_audio_callback(self, outdata, frames, time, status):
+        if status:
+            print(status)
+        chunksize = min(len(self.stream_data) - self.current_frame, frames)
+        outdata[:chunksize] = self.stream_data[self.current_frame:
+                                               self.current_frame + chunksize]
+        if chunksize < frames:
+            outdata[chunksize:] = 0
+            raise sd.CallbackStop()
+        self.current_frame += chunksize
 
     def init_audio_stream(self):
         if self.item_count == 0:
@@ -190,15 +190,15 @@ class App(tk.Tk):
         if len(self.audio_data[0]) == 0:
             warnings.warn("Empty first item, not able to initialize audio.")
         else:
-            global data
-            data = self.audio_data[0]
+            self.stream_data = self.audio_data[0]
             fs = self.audio_fs[0]
             num_ch = self.audio_data[0].shape[1]
             device = self.output_device
             try:
                 self.stream = sd.OutputStream(
                     samplerate=fs, device=device, channels=num_ch,
-                    callback=play_audio_callback, finished_callback=event.set)
+                    callback=self.play_audio_callback,
+                    finished_callback=event.set)
             except Exception as e:
                 print(str(e))
 
@@ -208,7 +208,6 @@ class App(tk.Tk):
                 self.item_buttons[idx].config(state="disabled")
             else:
                 self.item_buttons[idx].config(state="active")
-
 
     def start_audio_stream(self):
         if self.stream is not None:
@@ -229,8 +228,7 @@ class App(tk.Tk):
             self.stream.close()
 
     def switch_audio(self, id):
-        global data
-        data = self.audio_data[id]
+        self.stream_data = self.audio_data[id]
 
     def quit(self):
         print("BYE")
@@ -238,10 +236,10 @@ class App(tk.Tk):
         self.destroy()
 
 
-
-
-if __name__ == "__main__":
-    app = App()
-    app.protocol("WM_DELETE_WINDOW", app.quit)
+def main():
+    app = PlayAudioApp()
     app.mainloop()
 
+
+if __name__ == '__main__':
+    main()
