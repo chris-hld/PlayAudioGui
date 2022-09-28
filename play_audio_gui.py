@@ -21,7 +21,7 @@ item_list = [
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--file', help='input file', action='append')
-args = parser.parse_args() 
+args = parser.parse_args()
 if args.file:
     item_list = args.file
 
@@ -82,7 +82,7 @@ class PlayAudioApp(tk.Tk):
             self.init_audio_stream()
         except Exception as e:
             print(str(e))
-        
+
         self.protocol("WM_DELETE_WINDOW", self.quit)
 
     def create_wigets(self):
@@ -127,7 +127,7 @@ class PlayAudioApp(tk.Tk):
                           **paddings)
         controls_frame.grid(row=1, rowspan=2, columnspan=3, sticky='N',
                             **paddings)
-        items_frame.grid(row=3, rowspan=2, columnspan=3, sticky='EW', 
+        items_frame.grid(row=3, rowspan=2, columnspan=3, sticky='EW',
                          **paddings)
 
     def create_item_buttons(self, container, amount, paddings):
@@ -145,7 +145,7 @@ class PlayAudioApp(tk.Tk):
             self.init_audio_stream()
         except Exception as e:
             print(str(e))
-    
+
     def output_device_infobox(self):
         dev_info = sd.query_devices(device=self.output_device)
         showinfo(title='Audio Device Info', message=f'Selected\n {dev_info}')
@@ -159,7 +159,7 @@ class PlayAudioApp(tk.Tk):
                 self.audio_data.append(item_audio)
                 self.audio_fs.append(item_fs)
         self.item_count = len(self.audio_data)
-    
+
     def play_audio_callback(self, outdata, frames, time, status):
         if status:
             print(status)
@@ -182,7 +182,7 @@ class PlayAudioApp(tk.Tk):
             else:
                 if not all(self.audio_fs[0] == itfs for itfs in self.audio_fs):
                     warnings.warn("Samplerate not consistent")
-                if not all(self.audio_data[0].shape[1] == itch.shape[1] 
+                if not all(self.audio_data[0].shape[1] == itch.shape[1]
                     for itch in self.audio_data):
                     warnings.warn("Channel count not consistent")
 
@@ -218,13 +218,13 @@ class PlayAudioApp(tk.Tk):
     def stop_audio_stream(self):
         if self.stream is not None:
             if self.stream.stopped:
-                global current_frame
-                current_frame = 0
+                self.current_frame = 0
             self.stream.stop()
         self.start_button['relief'] = 'raised'
 
     def close_audio_stream(self):
         if self.stream is not None:
+            self.stream.abort()
             self.stream.close()
 
     def switch_audio(self, id):
