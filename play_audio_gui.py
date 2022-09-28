@@ -141,7 +141,8 @@ class PlayAudioApp(tk.Tk):
         for i in range(amount):
             self.item_buttons.append(tk.Button(container, text=item_list[i],
                                      command=lambda t=i: self.switch_audio(t),
-                                     height=8, width=15, default='disabled'))
+                                     height=8, width=15, default='disabled',
+                                     relief='raised'))
             self.item_buttons[i].grid(column=i, row=2, sticky="nsew",
                                       **paddings)
 
@@ -200,7 +201,7 @@ class PlayAudioApp(tk.Tk):
         if len(self.audio_data[0]) == 0:
             warnings.warn("Empty first item, not able to initialize audio.")
         else:
-            self.stream_data = self.audio_data[0]
+            self.switch_audio(0)
             fs = self.audio_fs[0]
             num_ch = self.audio_data[0].shape[1]
             device = self.output_device
@@ -239,6 +240,9 @@ class PlayAudioApp(tk.Tk):
 
     def switch_audio(self, id):
         self.stream_data = self.audio_data[id]
+        for btn in self.item_buttons:
+            btn['relief'] = 'raised'
+        self.item_buttons[id]['relief'] = 'sunken'
 
     def quit(self):
         print("BYE")
