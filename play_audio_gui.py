@@ -79,6 +79,7 @@ class PlayAudioApp(tk.Tk):
         # set up audio stream (with default)
         self.current_frame = 0
         self.stream_data = None  # should that be protected?
+        self.audio_gain = 1.0
         try:
             self.init_audio_stream()
         except Exception as e:
@@ -96,8 +97,8 @@ class PlayAudioApp(tk.Tk):
         items_frame = ttk.Frame(self, relief='groove', borderwidth=2)
 
         # Output device options
-        label = ttk.Label(device_frame,  text='Select output device:')
-        label.grid(column=0, row=0, sticky=tk.W, **paddings)
+        device_label = ttk.Label(device_frame, text='Select output device:')
+        device_label.grid(column=0, row=0, sticky=tk.W, **paddings)
         queried_devices = sd.query_devices()
         self.devices = [d.get('name') for d in queried_devices]
         device_option_menu = ttk.Combobox(
@@ -111,6 +112,11 @@ class PlayAudioApp(tk.Tk):
         button_output_device_info = ttk.Button(device_frame,text="Device Info",
             command=self.output_device_infobox)
         button_output_device_info.grid(column=2, row=0, sticky=tk.W, **paddings)
+        self.volume_dB_var = tk.DoubleVar()
+        volume_slider = tk.Scale(device_frame, from_=-60, to=+12, length=150,
+                                 label='Volume', orient=tk.HORIZONTAL,
+                                 command=self.set_volume)
+        volume_slider.grid(column=0, row=1, sticky=tk.W, **paddings)
 
         # start stop controls
         self.start_button = tk.Button(controls_frame, text='Play', bg='green',
@@ -171,8 +177,9 @@ class PlayAudioApp(tk.Tk):
         if status:
             print(status)
         chunksize = min(len(self.stream_data) - self.current_frame, frames)
-        outdata[:chunksize] = self.stream_data[self.current_frame:
-                                               self.current_frame + chunksize]
+        outdata[:chunksize] = self.audio_gain * \
+                                self.stream_data[self.current_frame:
+                                                 self.current_frame + chunksize]
         if chunksize < frames:
             outdata[chunksize:] = 0
             if self.loop_checkbtn_var.get():
@@ -219,6 +226,11 @@ class PlayAudioApp(tk.Tk):
                 self.item_buttons[idx].config(state="disabled")
             else:
                 self.item_buttons[idx].config(state="active")
+    
+    def set_volume(self, volume_dB):
+        if isinstance(volume_dB, str):
+            volume_dB = int(volume_dB)
+        self.audio_gain = 10**(volume_dB / 20)
 
     def start_audio_stream(self):
         if self.stream is not None:
