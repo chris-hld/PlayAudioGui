@@ -65,6 +65,7 @@ class PlayAudioApp(tk.Tk):
         self.devices = (["--- Not probed yet ---"])
         self.output_device = None
         self.option_device_var = tk.StringVar(self)
+        self.loop_checkbtn_var = tk.IntVar(self)
 
         # set up audio items
         self.load_audio_data(item_list)
@@ -113,11 +114,16 @@ class PlayAudioApp(tk.Tk):
 
         # start stop controls
         self.start_button = tk.Button(controls_frame, text='Play', bg='green',
-                                      command=self.start_audio_stream)
-        self.start_button.pack(side=tk.LEFT)
+                                      command=self.start_audio_stream,
+                                      height=2, width=5)
+        self.start_button.pack(side=tk.LEFT, **paddings)
         self.stop_button = tk.Button(controls_frame, text='Stop', bg='red',
-                                      command=self.stop_audio_stream)
-        self.stop_button.pack(side=tk.LEFT)
+                                     command=self.stop_audio_stream,
+                                     height=2, width=5)
+        self.stop_button.pack(side=tk.LEFT, **paddings)
+        self.loop_checkbutton = ttk.Checkbutton(controls_frame, text='Loop',
+                                                variable=self.loop_checkbtn_var)
+        self.loop_checkbutton.pack(side=tk.LEFT, **paddings)
 
         # items
         self.create_item_buttons(items_frame, self.item_count, paddings)
@@ -168,7 +174,11 @@ class PlayAudioApp(tk.Tk):
                                                self.current_frame + chunksize]
         if chunksize < frames:
             outdata[chunksize:] = 0
-            raise sd.CallbackStop()
+            if self.loop_checkbtn_var.get():
+                self.current_frame = 0
+            else:
+                print('End of file')
+                raise sd.CallbackStop
         self.current_frame += chunksize
 
     def init_audio_stream(self):
