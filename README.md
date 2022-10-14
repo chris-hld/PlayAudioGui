@@ -18,3 +18,8 @@ If you prefer, you can pass the audio files directly:
 ```
 python play_audio_gui.py -f myaudio.wav -f emptyButton
 ```
+or pass a directory and it will load all sound files contained in the specified folder:
+
+```
+python play_audio_gui.py -d ./Path/To/SoundFiles/
+```
