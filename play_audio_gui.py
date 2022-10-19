@@ -8,7 +8,7 @@ import argparse
 import numpy as np
 import sounddevice as sd
 import soundfile as sf
-
+import os
 
 
 ### Specify Audio files here, or leave empty to use with command line arg
@@ -21,10 +21,14 @@ item_list = [
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--file', help='input file', action='append')
+parser.add_argument('-d', '--directory', help='input file directory', action='store')
 args = parser.parse_args()
 if args.file:
     item_list = args.file
-
+if args.directory:
+    item_list.clear()
+    for file_name in os.listdir(args.directory):
+        item_list.append(os.path.join(args.directory, file_name))
 
 event = threading.Event()
 
@@ -226,7 +230,7 @@ class PlayAudioApp(tk.Tk):
                 self.item_buttons[idx].config(state="disabled")
             else:
                 self.item_buttons[idx].config(state="active")
-    
+
     def set_volume(self, volume_dB):
         if isinstance(volume_dB, str):
             volume_dB = int(volume_dB)
