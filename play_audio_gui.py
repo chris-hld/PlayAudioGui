@@ -153,7 +153,7 @@ class PlayAudioApp(tk.Tk):
             self.item_buttons.append(tk.Button(container, text=item_list[i],
                                      command=lambda t=i: self.switch_audio(t),
                                      height=8, width=15, default='disabled',
-                                     relief='raised'))
+                                     relief='raised', wraplength='3cm'))
             self.item_buttons[i].grid(column=i, row=2, sticky="nsew",
                                       **paddings)
 
