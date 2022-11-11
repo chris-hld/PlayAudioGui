@@ -21,14 +21,15 @@ item_list = [
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--file', help='input file', action='append')
-parser.add_argument('-d', '--directory', help='input file directory', action='store')
+parser.add_argument('-d', '--directory', help='input file directory', action='append')
 args = parser.parse_args()
 if args.file:
     item_list = args.file
 if args.directory:
-    item_list.clear()
-    for file_name in os.listdir(args.directory):
-        item_list.append(os.path.join(args.directory, file_name))
+    item_list = []
+    for d in args.directory:
+        for file_name in os.listdir(d):
+            item_list.append(os.path.join(d, file_name))
 
 event = threading.Event()
 
