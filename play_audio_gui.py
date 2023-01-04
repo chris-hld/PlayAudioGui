@@ -11,17 +11,18 @@ import soundfile as sf
 import os
 
 
-### Specify Audio files here, or leave empty to use with command line arg
+# Specify Audio files here, or leave empty to use with command line arg
 item_list = [
     'Clapping.wav',
     'applause.wav',
     'applause00.wav',
 ]
-###
+#
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--file', help='input file', action='append')
-parser.add_argument('-d', '--directory', help='input file directory', action='append')
+parser.add_argument('-d', '--directory',
+                    help='input file directory', action='append')
 args = parser.parse_args()
 if args.file:
     item_list = args.file
@@ -43,6 +44,7 @@ def load_audio(file_name):
         fs = None
     return data, fs
 
+
 def sanitize_audio_data(audio_data_list):
     # if not equal, extend length and channels.
     max_len = np.max([a.shape[0] if a is not None else 0 for a in
@@ -52,10 +54,11 @@ def sanitize_audio_data(audio_data_list):
     for idx in range(len(audio_data_list)):
         b = np.zeros((max_len, max_ch))
         if audio_data_list[idx] is not None:
-            b[:audio_data_list[idx].shape[0],:audio_data_list[idx].shape[1]] = \
+            b[:audio_data_list[idx].shape[0], :audio_data_list[idx].shape[1]] = \
                 audio_data_list[idx]
         audio_data_list[idx] = b
     return audio_data_list
+
 
 class PlayAudioApp(tk.Tk):
     def __init__(self):
@@ -114,8 +117,9 @@ class PlayAudioApp(tk.Tk):
         device_option_menu.bind('<<ComboboxSelected>>',
                                 self.option_changed_device)
         device_option_menu.grid(column=1, row=0, sticky=tk.W, **paddings)
-        button_output_device_info = ttk.Button(device_frame,text="Device Info",
-            command=self.output_device_infobox)
+        button_output_device_info = ttk.Button(device_frame, text="Device Info",
+                                               command=
+                                               self.output_device_infobox)
         button_output_device_info.grid(column=2, row=0, sticky=tk.W, **paddings)
         self.volume_dB_var = tk.DoubleVar()
         volume_slider = tk.Scale(device_frame, from_=-60, to=+12, length=150,
@@ -183,8 +187,8 @@ class PlayAudioApp(tk.Tk):
             print(status)
         chunksize = min(len(self.stream_data) - self.current_frame, frames)
         outdata[:chunksize] = self.audio_gain * \
-                                self.stream_data[self.current_frame:
-                                                 self.current_frame + chunksize]
+            self.stream_data[self.current_frame:
+                             self.current_frame + chunksize]
         if chunksize < frames:
             outdata[chunksize:] = 0
             if self.loop_checkbtn_var.get():
@@ -206,7 +210,7 @@ class PlayAudioApp(tk.Tk):
                 if not all(self.audio_fs[0] == itfs for itfs in self.audio_fs):
                     warnings.warn("Samplerate not consistent")
                 if not all(self.audio_data[0].shape[1] == itch.shape[1]
-                    for itch in self.audio_data):
+                           for itch in self.audio_data):
                     warnings.warn("Channel count not consistent")
 
         # init audio
