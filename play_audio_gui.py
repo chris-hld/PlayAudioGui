@@ -32,7 +32,6 @@ if args.directory:
         for file_name in os.listdir(d):
             item_list.append(os.path.join(d, file_name))
 
-event = threading.Event()
 
 def load_audio(file_name):
     # load data and fs, or None
@@ -84,9 +83,12 @@ class PlayAudioApp(tk.Tk):
         # activate buttons if data present
         self.activate_items()
 
+        # lock for audio data
+        self.event = threading.Event()
+
         # set up audio stream (with default)
         self.current_frame = 0
-        self.stream_data = None  # should that be protected?
+        self.stream_data = None  # should be protected with self.event
         self.audio_gain = 1.0
         try:
             self.init_audio_stream()
@@ -183,6 +185,7 @@ class PlayAudioApp(tk.Tk):
         self.item_count = len(self.audio_data)
 
     def play_audio_callback(self, outdata, frames, time, status):
+        self.event.clear()
         if status:
             print(status)
         chunksize = min(len(self.stream_data) - self.current_frame, frames)
@@ -197,6 +200,7 @@ class PlayAudioApp(tk.Tk):
                 print('End of file')
                 raise sd.CallbackStop
         self.current_frame += chunksize
+        self.event.set()
 
     def init_audio_stream(self):
         if self.item_count == 0:
@@ -217,6 +221,7 @@ class PlayAudioApp(tk.Tk):
         if len(self.audio_data[0]) == 0:
             warnings.warn("Empty first item, not able to initialize audio.")
         else:
+            self.event.set()
             self.switch_audio(0)
             fs = self.audio_fs[0]
             num_ch = self.audio_data[0].shape[1]
@@ -225,7 +230,7 @@ class PlayAudioApp(tk.Tk):
                 self.stream = sd.OutputStream(
                     samplerate=fs, device=device, channels=num_ch,
                     callback=self.play_audio_callback,
-                    finished_callback=event.set)
+                    finished_callback=self.event.set)
             except Exception as e:
                 print(str(e))
 
@@ -260,6 +265,7 @@ class PlayAudioApp(tk.Tk):
             self.stream.close()
 
     def switch_audio(self, id):
+        self.event.wait()
         self.stream_data = self.audio_data[id]
         for btn in self.item_buttons:
             btn['relief'] = 'raised'
