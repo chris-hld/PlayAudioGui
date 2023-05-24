@@ -152,6 +152,8 @@ class PlayAudioApp(tk.Tk):
                             **paddings)
         items_frame.grid(row=3, rowspan=2, columnspan=3, sticky='EW',
                          **paddings)
+        
+        self.minsize(640,400)
 
     def create_item_buttons(self, container, amount, paddings):
         self.item_buttons = []
@@ -239,7 +241,7 @@ class PlayAudioApp(tk.Tk):
             if ch is None:
                 self.item_buttons[idx].config(state="disabled")
             else:
-                self.item_buttons[idx].config(state="active")
+                self.item_buttons[idx].config(state="normal")
 
     def set_volume(self, volume_dB):
         if isinstance(volume_dB, str):
