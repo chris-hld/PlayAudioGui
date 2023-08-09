@@ -41,12 +41,15 @@ if args.directory:
 def load_audio(file_name):
     # load data and fs, or None
     try:
-        data, fs = sf.read(file_name, always_2d=True)
+        f = sf.SoundFile(file_name)
+        data = f.read(always_2d=True)
+        fs = f.samplerate
     except Exception as e:
         print(str(e))
+        f = None
         data = None
         fs = None
-    return data, fs
+    return f, data, fs
 
 
 def sanitize_audio_data(audio_data_list):
@@ -180,11 +183,13 @@ class PlayAudioApp(tk.Tk):
         showinfo(title='Audio Device Info', message=f'Selected\n {dev_info}')
 
     def load_audio_data(self, item_list):
+        self.fhandles = []
         self.audio_data = []
         self.audio_fs = []
         if item_list:
             for item in item_list:
-                item_audio, item_fs = load_audio(item)
+                file_handle, item_audio, item_fs = load_audio(item)
+                self.fhandles.append(file_handle)
                 self.audio_data.append(item_audio)
                 self.audio_fs.append(item_fs)
         self.item_count = len(self.audio_data)
@@ -269,6 +274,12 @@ class PlayAudioApp(tk.Tk):
             self.stream.abort()
             self.stream.close()
 
+    def close_audio_files(self):
+        if self.fhandles:
+            for f in self.fhandles:
+                if f is not None:
+                    f.close()
+
     def switch_audio(self, id):
         self.event.wait()
         self.stream_data = self.audio_data[id]
@@ -279,6 +290,7 @@ class PlayAudioApp(tk.Tk):
     def quit(self):
         print("BYE")
         self.close_audio_stream()
+        self.close_audio_files()
         self.destroy()
 
 
