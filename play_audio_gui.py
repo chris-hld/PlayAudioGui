@@ -27,7 +27,7 @@ parser.add_argument('-d', '--directory',
                     help='input file directory', action='append')
 args = parser.parse_args()
 
-item_list = []
+# item_list = []
 if args.file:
     item_list = args.file
 if args.files:
@@ -165,7 +165,7 @@ class PlayAudioApp(tk.Tk):
         self.item_buttons = []
         for i in range(amount):
             self.item_buttons.append(tk.Button(container, text=item_list[i],
-                                     command=lambda t=i: self.switch_audio(t),
+                                     command=lambda t=i: self.on_item_button(t),
                                      height=8, width=15, default='disabled',
                                      relief='raised', wraplength='3cm'))
             self.item_buttons[i].grid(column=i, row=2, sticky="nsew",
@@ -283,9 +283,15 @@ class PlayAudioApp(tk.Tk):
     def switch_audio(self, id):
         self.event.wait()
         self.stream_data = self.audio_data[id]
+    
+    def on_item_button(self, id):
+        self.switch_audio(id)
         for btn in self.item_buttons:
             btn['relief'] = 'raised'
+            btn['fg'] = 'black'
+
         self.item_buttons[id]['relief'] = 'sunken'
+        self.item_buttons[id]['fg'] = 'dark green'
 
     def quit(self):
         print("BYE")
