@@ -27,15 +27,16 @@ parser.add_argument('-d', '--directory',
                     help='input file directory', action='append')
 args = parser.parse_args()
 
-# item_list = []
-if args.file:
-    item_list = args.file
-if args.files:
-    item_list.extend(*args.files)
-if args.directory:
-    for d in args.directory:
-        for file_name in os.listdir(d):
-            item_list.append(os.path.join(d, file_name))
+if any(vars(args).values()):
+    item_list = []  # clearing list if user specified
+    if args.file:
+        item_list = args.file
+    if args.files:
+        item_list.extend(*args.files)
+    if args.directory:
+        for d in args.directory:
+            for file_name in os.listdir(d):
+                item_list.append(os.path.join(d, file_name))
 
 
 def load_audio(file_name):
